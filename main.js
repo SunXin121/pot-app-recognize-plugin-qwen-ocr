@@ -67,7 +67,7 @@ async function recognize(base64, lang, options) {
         type: 'Json',
         payload: {
           stream: false,
-          model: 'qwen-vl-max-latest',
+          model: 'qwen2.5-vl-72b-instruct',
           messages: [
             {
               role: 'user',
