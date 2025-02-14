@@ -12,13 +12,13 @@
 
 ![image-20250113230159492](https://5a352de.webp.li/2025/01/ab995281f9d7f9cdac04a55e0dd48d68.png)
 
-### 获取 token
+### 获取 cookie
 
 打开 [Qwen](https://chat.qwenlm.ai/) 注册并登陆账户
 
-`F12` 打开控制台-网络，查看 `completions` 请求头里面的 `Authorization` 字段就是需要的 token
+`F12` 打开控制台-网络，进行对话，查看 `completions` 请求头里面的 cookie
 
-![65742b16f453abbaddbacae72dc231c584d4680f_2_690x281](https://5a352de.webp.li/2025/01/69700b2d8007772e78fdbfdaf2178311.webp)
+![image.png](https://s2.loli.net/2025/02/11/Dr9xnSGzqVXgceW.png)
 
 ### 配置插件
 
@@ -26,9 +26,9 @@
 
 ![image-20250113230602351](https://5a352de.webp.li/2025/01/b58c75b149d9cdd35e64426bad251a9d.png)
 
-2.输入刚才获得的 token，多个 token 用 `,` 隔开，Prompt 为可选配置，不填则使用默认 Prompt
+2.输入刚才获得的 cookie，Prompt 为可选配置，不填则使用默认 Prompt
 
-![image-20250113235410567](https://5a352de.webp.li/2025/01/16b75a5e3823c2fac8dd1c9799a616f0.png)
+[![image.png](https://s2.loli.net/2025/02/11/TKridMqHt6OnfoZ.png)](https://s2.loli.net/2025/02/11/TKridMqHt6OnfoZ.png)
 
 3. 在 Pot-热键设置 里面可以设置文字识别的快捷键
 
