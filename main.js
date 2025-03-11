@@ -1,10 +1,15 @@
 async function recognize(base64, lang, options) {
   const { config, utils } = options;
   const { tauriFetch: fetch, cacheDir, readBinaryFile, http } = utils;
-  let { cookie, customPrompt } = config;
+  let { cookie, customPrompt, model } = config;
 
   if (!cookie) {
     throw new Error("No cookie provided");
+  }
+
+  // 如果沒有設定 model，使用預設值
+  if (!model) {
+    model = "qwen-max-latest";
   }
 
   // 从cookie中提取token
@@ -72,7 +77,7 @@ async function recognize(base64, lang, options) {
       type: "Json",
       payload: {
         stream: false,
-        model: "qwen2.5-vl-72b-instruct",
+        model: model,
         messages: [
           {
             role: "user",
