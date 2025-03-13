@@ -7,19 +7,35 @@ async function recognize(base64, lang, options) {
     throw new Error("No cookie provided");
   }
 
-  // 从cookie中提取token
-  const tokenMatch = cookie.match(/token=([^;]+)/);
-  if (!tokenMatch) {
-    throw new Error("Invalid cookie format: missing token");
+  // 将cookie按逗号分隔成数组
+  const cookies = cookie
+    .split(",")
+    .map((c) => c.trim())
+    .filter((c) => c);
+
+  if (cookies.length === 0) {
+    throw new Error("No valid cookie provided");
   }
-  const token = tokenMatch[1];
 
-  let file_path = `${cacheDir}pot_screenshot_cut.png`;
-  let fileContent = await readBinaryFile(file_path);
+  let lastError = null;
 
-  let prompt = "";
-  if (!customPrompt) {
-    prompt = `请识别图片中的内容，注意以下要求：
+  // 遍历尝试每个cookie
+  for (const singleCookie of cookies) {
+    try {
+      // 从cookie中提取token
+      const tokenMatch = singleCookie.match(/token=([^;]+)/);
+      if (!tokenMatch) {
+        // 跳过无效的cookie
+        continue;
+      }
+      const token = tokenMatch[1];
+
+      let file_path = `${cacheDir}pot_screenshot_cut.png`;
+      let fileContent = await readBinaryFile(file_path);
+
+      let prompt = "";
+      if (!customPrompt) {
+        prompt = `请识别图片中的内容，注意以下要求：
 对于数学公式和普通文本：
 1.  所有数学公式和数学符号都必须使用标准的LaTeX格式。
 2.  行内公式使用单个\`$\`符号包裹，如：\`$x^2$\`
@@ -34,65 +50,85 @@ async function recognize(base64, lang, options) {
 2.  忽略干扰线和噪点。
 3.  注意区分相似字符，如 0 和 O、1 和 l、2 和 Z、5 和 S、6 和 G、8 和 B、9 和 q、7 和 T、4 和 A 等。
 4.  验证码通常为 4-6 位字母数字组合。`;
-  } else {
-    prompt = customPrompt;
+      } else {
+        prompt = customPrompt;
+      }
+
+      try {
+        const uploadResponse = await fetch("https://chat.qwenlm.ai/api/v1/files/", {
+          method: "POST",
+          headers: {
+            "content-type": "multipart/form-data",
+            authorization: "Bearer " + token,
+            cookie: singleCookie,
+          },
+          body: http.Body.form({
+            file: {
+              file: fileContent,
+              mime: "image/png",
+              fileName: "pot_screenshot_cut.png",
+            },
+          }),
+        });
+
+        const uploadData = uploadResponse.data;
+
+        if (!uploadData.id) {
+          // 如果文件上传失败，尝试下一个cookie
+          continue;
+        }
+
+        let imageId = uploadData.id;
+
+        const res = await fetch("https://chat.qwenlm.ai/api/chat/completions", {
+          method: "POST",
+          headers: {
+            accept: "*/*",
+            authorization: `Bearer ${token}`,
+            cookie: singleCookie,
+            "Content-Type": "application/json",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+          },
+          body: {
+            type: "Json",
+            payload: {
+              stream: false,
+              model: "qwen-max-latest",
+              messages: [
+                {
+                  role: "user",
+                  content: [
+                    { type: "text", text: prompt },
+                    { type: "image", image: imageId },
+                  ],
+                },
+              ],
+              session_id: "1",
+              chat_id: "2",
+              id: "3",
+            },
+          },
+        });
+
+        if (res.ok) {
+          const data = res.data;
+          return data.choices[0].message.content;
+        }
+        // 如果请求不成功，尝试下一个cookie
+      } catch (error) {
+        // 保存错误但继续尝试下一个cookie
+        lastError = error;
+      }
+    } catch (error) {
+      // 保存错误但继续尝试下一个cookie
+      lastError = error;
+    }
   }
 
-  const uploadResponse = await fetch("https://chat.qwenlm.ai/api/v1/files/", {
-    method: "POST",
-    headers: {
-      "content-type": "multipart/form-data",
-      authorization: "Bearer " + token,
-      cookie: cookie,
-    },
-    body: http.Body.form({
-      file: {
-        file: fileContent,
-        mime: "image/png",
-        fileName: "pot_screenshot_cut.png",
-      },
-    }),
-  });
-
-  const uploadData = uploadResponse.data;
-
-  if (!uploadData.id) throw new Error("文件上传失败");
-  let imageId = uploadData.id;
-
-  const res = await fetch("https://chat.qwenlm.ai/api/chat/completions", {
-    method: "POST",
-    headers: {
-      accept: "*/*",
-      authorization: `Bearer ${token}`,
-      cookie: cookie,
-      "Content-Type": "application/json",
-      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
-    },
-    body: {
-      type: "Json",
-      payload: {
-        stream: false,
-        model: "qwen2.5-vl-72b-instruct",
-        messages: [
-          {
-            role: "user",
-            content: [
-              { type: "text", text: prompt },
-              { type: "image", image: imageId },
-            ],
-          },
-        ],
-        session_id: "1",
-        chat_id: "2",
-        id: "3",
-      },
-    },
-  });
-
-  if (res.ok) {
-    const data = res.data;
-    return data.choices[0].message.content;
+  // 所有cookie都失败时抛出最后一个错误
+  if (lastError) {
+    throw lastError;
   } else {
-    throw `Http Request Error\nHttp Status: ${res.status}\n${JSON.stringify(res.data)}`;
+    throw new Error("所有Cookie均已失效，请更新Cookie");
   }
 }

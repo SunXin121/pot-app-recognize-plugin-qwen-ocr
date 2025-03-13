@@ -7,7 +7,7 @@
   "needs": [
     {
       "key": "cookie",
-      "display": "Cookie",
+      "display": "Cookie（支持多个，使用逗号分隔）",
       "type": "input"
     },
     {
