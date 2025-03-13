@@ -1,10 +1,16 @@
 async function recognize(base64, lang, options) {
   const { config, utils } = options;
   const { tauriFetch: fetch, cacheDir, readBinaryFile, http } = utils;
-  let { cookie, customPrompt } = config;
+  let { cookie, customPrompt, model } = config;
 
   if (!cookie) {
     throw new Error("No cookie provided");
+  }
+
+
+  // 如果沒有設定 model，使用預設值
+  if (!model) {
+    model = "qwen-max-latest";
   }
 
   // 将cookie按逗号分隔成数组
@@ -15,6 +21,7 @@ async function recognize(base64, lang, options) {
 
   if (cookies.length === 0) {
     throw new Error("No valid cookie provided");
+
   }
 
   let lastError = null;
@@ -80,33 +87,28 @@ async function recognize(base64, lang, options) {
 
         let imageId = uploadData.id;
 
-        const res = await fetch("https://chat.qwenlm.ai/api/chat/completions", {
-          method: "POST",
-          headers: {
-            accept: "*/*",
-            authorization: `Bearer ${token}`,
-            cookie: singleCookie,
-            "Content-Type": "application/json",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
-          },
-          body: {
-            type: "Json",
-            payload: {
-              stream: false,
-              model: "qwen-max-latest",
-              messages: [
-                {
-                  role: "user",
-                  content: [
-                    { type: "text", text: prompt },
-                    { type: "image", image: imageId },
-                  ],
-                },
-              ],
-              session_id: "1",
-              chat_id: "2",
-              id: "3",
-            },
+
+  const res = await fetch("https://chat.qwenlm.ai/api/chat/completions", {
+    method: "POST",
+    headers: {
+      accept: "*/*",
+      authorization: `Bearer ${token}`,
+      cookie: cookie,
+      "Content-Type": "application/json",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+    },
+    body: {
+      type: "Json",
+      payload: {
+        stream: false,
+        model: model,
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: prompt },
+              { type: "image", image: imageId },
+            ],
           },
         });
 

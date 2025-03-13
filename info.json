@@ -14,6 +14,11 @@
       "key": "customPrompt",
       "display": "Prompt[可选]",
       "type": "input"
+    },
+    {
+      "key": "model",
+      "display": "模型[可选]",
+      "type": "input"
     }
   ],
   "language": {
