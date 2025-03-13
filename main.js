@@ -88,27 +88,33 @@ async function recognize(base64, lang, options) {
         let imageId = uploadData.id;
 
 
-  const res = await fetch("https://chat.qwenlm.ai/api/chat/completions", {
-    method: "POST",
-    headers: {
-      accept: "*/*",
-      authorization: `Bearer ${token}`,
-      cookie: cookie,
-      "Content-Type": "application/json",
-      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
-    },
-    body: {
-      type: "Json",
-      payload: {
-        stream: false,
-        model: model,
-        messages: [
-          {
-            role: "user",
-            content: [
-              { type: "text", text: prompt },
-              { type: "image", image: imageId },
-            ],
+        const res = await fetch("https://chat.qwenlm.ai/api/chat/completions", {
+          method: "POST",
+          headers: {
+            accept: "*/*",
+            authorization: `Bearer ${token}`,
+            cookie: singleCookie,
+            "Content-Type": "application/json",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+          },
+          body: {
+            type: "Json",
+            payload: {
+              stream: false,
+              model: model,
+              messages: [
+                {
+                  role: "user",
+                  content: [
+                    { type: "text", text: prompt },
+                    { type: "image", image: imageId },
+                  ],
+                },
+              ],
+              session_id: "1",
+              chat_id: "2",
+              id: "3",
+            },
           },
         });
 
