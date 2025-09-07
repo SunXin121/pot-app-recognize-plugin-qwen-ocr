@@ -3,7 +3,7 @@
   "plugin_type": "recognize",
   "icon": "favicon.png",
   "display": "QwenOCR",
-  "homepage": "https://github.com/ling-drag0n/pot-app-recognize-plugin-qwen-ocr",
+  "homepage": "https://github.com/SunXin121/pot-app-recognize-plugin-qwen-ocr",
   "needs": [
     {
       "key": "cookie",
