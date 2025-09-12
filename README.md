@@ -82,3 +82,8 @@
 4. **"网络连接失败"**
    - 检查网络连接
    - 确认能正常访问 `chat.qwenlm.ai`
+
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=SunXin121/pot-app-recognize-plugin-qwen-ocr&type=Date)](https://www.star-history.com/#SunXin121/pot-app-recognize-plugin-qwen-ocr&Date)
